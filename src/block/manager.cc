@@ -87,7 +87,7 @@ namespace chfs
 
     // TODO: Implement this function.
     // UNIMPLEMENTED();
-    CHFS_ASSERT(block_id <= this->block_cnt, "block_id out of range");
+    CHFS_ASSERT(block_id < this->block_cnt, "block_id out of range");
     memcpy(block_data + block_id * block_sz, data, block_sz * sizeof(u8));
     return KNullOk;
   }

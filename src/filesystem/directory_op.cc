@@ -128,7 +128,7 @@ namespace chfs
 
     auto dir_data = dir_res.unwrap();
     content.assign(reinterpret_cast<const char *>(dir_data.data()), dir_data.size());
-    std::cout << "directory content: " << content << std::endl;
+    // std::cout << "directory content: " << content << std::endl;
     parse_directory(content, list);
     // TODO: Implement this function.
     // UNIMPLEMENTED();
@@ -172,18 +172,19 @@ namespace chfs
     auto inode_res = this->inode_manager_->allocate_inode(type, alloc_res.unwrap());
     if (inode_res.is_err())
       return inode_res.unwrap_error();
-
+    // std::cout << "filename: " << std::string(name) << "\n";
+    // std::cout << "inode number: " << inode_res.unwrap() << std::endl;
     auto str = dir_list_to_string(list);
-    std::cout << "current dir content: " << str << std::endl;
+    // std::cout << "current dir content: " << str << std::endl;
     auto res = append_to_directory(str, name, inode_res.unwrap());
     this->write_file(id, std::vector<u8>(res.begin(), res.end()));
-    std::cout << "write directory, content: " << res << std::endl;
-    // TODO:
-    // 1. Check if `name` already exists in the parent.
-    //    If already exist, return ErrorType::AlreadyExist.
-    // 2. Create the new inode.
-    // 3. Append the new entry to the parent directory.
-    // UNIMPLEMENTED();
+    // std::cout << "write directory, content: " << res << std::endl;
+    //  TODO:
+    //  1. Check if `name` already exists in the parent.
+    //     If already exist, return ErrorType::AlreadyExist.
+    //  2. Create the new inode.
+    //  3. Append the new entry to the parent directory.
+    //  UNIMPLEMENTED();
 
     return ChfsResult<inode_id_t>(static_cast<inode_id_t>(inode_res.unwrap()));
   }
@@ -192,11 +193,12 @@ namespace chfs
   auto FileOperation::unlink(inode_id_t parent, const char *name)
       -> ChfsNullResult
   {
-    std::vector<u8> u8_name(strlen(name));
-    for (int i = 0; i < strlen(name); i++)
-    {
-      std::cout << *((u8 *)(name + i)) << " ";
-    }
+    // std::vector<u8> u8_name(strlen(name));
+    // for (int i = 0; i < strlen(name); i++)
+    // {
+    //   std::cout << *((u8 *)(name + i));
+    // }
+    // std::cout << std::endl;
     // std::cout << "unlink: " << std::vector<u8>(name) << std::endl;
     /**
      * Remove the file named @name from directory @parent.
@@ -210,7 +212,7 @@ namespace chfs
     // not exist
     if (look_res.is_err())
       return look_res.unwrap_error();
-
+    // std::cout << "unlink: look up finish" << std::endl;
     inode_id_t target_id = look_res.unwrap();
     std::vector<u8> inode(this->block_manager_->block_size());
     auto inode_res = this->inode_manager_->read_inode(target_id, inode);
@@ -220,11 +222,12 @@ namespace chfs
     auto inode_p = reinterpret_cast<Inode *>(inode.data());
     if (inode_p->get_type() == InodeType::Directory)
       return ErrorType::NotEmpty;
-
+    // std::cout << "unlink: get type finish" << std::endl;
     auto remove_res = remove_file(target_id);
+    // std::cout << "remove return" << std::endl;
     if (remove_res.is_err())
       return remove_res.unwrap_error();
-
+    // std::cout << "remove finish" << std::endl;
     std::list<DirectoryEntry> list;
     read_directory(this, parent, list);
     std::string src = dir_list_to_string(list);
@@ -234,7 +237,7 @@ namespace chfs
     // 1. Remove the file, you can use the function `remove_file`
     // 2. Remove the entry from the directory.
     // UNIMPLEMENTED();
-
+    // std::cout << "unlink success" << std::endl;
     return KNullOk;
   }
 

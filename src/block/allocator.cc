@@ -135,12 +135,12 @@ namespace chfs
       }
 
       // If we find one free bit inside current bitmap block.
-      if (res)
+      if (res.has_value())
       {
         // The block id of the allocated block.
         block_id_t retval = static_cast<block_id_t>(0);
 
-        Bitmap modifiedBitmap(buffer.data(), this->last_block_num / KBitsPerByte);
+        Bitmap modifiedBitmap(buffer.data(), i == this->bitmap_block_cnt - 1 ? this->last_block_num / KBitsPerByte : bm->block_size());
         modifiedBitmap.set(res.value());
 
         bm->write_block(i + this->bitmap_block_id, buffer.data());
@@ -152,7 +152,8 @@ namespace chfs
         // 2. Flush the changed bitmap block back to the block manager.
         // 3. Calculate the value of `retval`.
         // UNIMPLEMENTED();
-
+        // std::cout << "allocate: " << retval << std::endl;
+        CHFS_ASSERT(retval < this->bm->total_blocks(), "allocate fault");
         return ChfsResult<block_id_t>(retval);
       }
     }

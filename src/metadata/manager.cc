@@ -292,25 +292,27 @@ namespace chfs
   // {Your code}
   auto InodeManager::free_inode(inode_id_t id) -> ChfsNullResult
   {
-
-    // simple pre-checks
+    // std::cout << "free_inode: " << id << std::endl;
+    //  simple pre-checks
     if (id >= max_inode_supported - 1)
     {
       return ChfsNullResult(ErrorType::INVALID_ARG);
     }
 
     auto raw_inode_id = LOGIC_2_RAW(id);
-    auto total_bits_per_blocks = bm->block_size() / KBitsPerByte;
+    auto total_bits_per_blocks = bm->block_size() * KBitsPerByte;
     auto inode_blocks = raw_inode_id / total_bits_per_blocks;
     auto inode_index = raw_inode_id % total_bits_per_blocks;
 
     std::vector<u8> buffer(bm->block_size());
     bm->read_block(1 + n_table_blocks + inode_blocks, buffer.data());
     Bitmap inode_bitmap(buffer.data(), bm->block_size());
+    // std::cout << "bitmap check" << std::endl;
     if (!inode_bitmap.check(inode_index))
     {
       return ChfsNullResult(ErrorType::INVALID_ARG);
     }
+    // std::cout << "bitmap not set " << std::endl;
     inode_bitmap.clear(inode_index);
     bm->write_block(1 + n_table_blocks + inode_blocks, buffer.data());
 
@@ -319,7 +321,7 @@ namespace chfs
     auto inode_table_index = raw_inode_id % inode_per_blocks;
     block_id_t flushed_entry_data = KInvalidBlockID;
     bm->write_partial_block(1 + inode_table_blocks, (u8 *)(&flushed_entry_data), inode_table_index * sizeof(block_id_t), sizeof(block_id_t));
-    std::cout << "write inode table blocks: " << inode_table_blocks << "\n write inode table index: " << inode_table_index << std::endl;
+    // std::cout << "write inode table blocks: " << inode_table_blocks << "\n write inode table index: " << inode_table_index << std::endl;
     // TODO:
     // 1. Clear the inode table entry.
     //    You may have to use macro `LOGIC_2_RAW`

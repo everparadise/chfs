@@ -89,6 +89,7 @@ namespace chfs
   auto FileOperation::write_file(inode_id_t id, const std::vector<u8> &content)
       -> ChfsNullResult
   {
+    // std::cout << "write " << content.size
     auto error_code = ErrorType::DONE;
     const auto block_size = this->block_manager_->block_size();
     usize old_block_num = 0;
@@ -167,7 +168,7 @@ namespace chfs
             // indirect_block.resize(block_size);
             // std::cout << "after resize: " << reinterpret_cast<block_id_t *>(indirect_block.data())[0] << std::endl;
           }
-          reinterpret_cast<block_id_t *>(indirect_block.data())[idx - inlined_blocks_num] = alloc_res.unwrap();
+          (reinterpret_cast<block_id_t *>(indirect_block.data()))[idx - inlined_blocks_num] = alloc_res.unwrap();
         }
         // UNIMPLEMENTED();
       }
@@ -273,7 +274,12 @@ namespace chfs
         //   {
         //     std::cout << (int)(*it) << " ";
         //   }
-        this->block_manager_->write_partial_block(block_id, content.data() + write_sz, 0, sz);
+        if (sz == block_size)
+        {
+          this->block_manager_->write_block(block_id, content.data() + write_sz);
+        }
+        else
+          this->block_manager_->write_partial_block(block_id, content.data() + write_sz, 0, sz);
 
         // TODO: Write to current block.
         // UNIMPLEMENTED();
